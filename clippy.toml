@@ -1,5 +1,9 @@
 allow-unwrap-in-tests = true
 doc-valid-idents = [
+  "DaVinci",
+  "CapCut",
+  "YouTube",
+  "TikTok",
   "NVENC",
   "NVDEC",
   "FFmpeg",

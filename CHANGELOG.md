@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Other
 
+- Provide a docs.rs landing page for the CLI package, with usage examples and links to the Rust API.
 - Refresh direct dependencies and lockfiles, including telemetry-parser 0.4 and SHA-2 0.11; require Rust 1.89.
 - Use cargo-nextest in CI and Nix, retain separate doctests, and enable weekly dependency checks.
 - Build portable docs on docs.rs and include shared README/license files in Nix source archives.
