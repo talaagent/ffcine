@@ -49,10 +49,10 @@ a release PR is merged. Review version bumps and changelog entries and require
 passing CI before merging. CI is dispatched explicitly for token-created release PRs.
 
 Release automation uses **release-plz** for both release PRs and publishing.
-A crate's first publication needs a crates.io token; trusted publishing cannot
-create it. `CARGO_REGISTRY_TOKEN` is configured as a repository Actions secret,
-so release-plz can publish `ffcine-comp` and any future new crates alongside
-the existing workspace packages.
+A crate's first publication needs a scoped crates.io token; trusted publishing
+cannot create it. Existing crate updates use OIDC without a persistent registry
+secret. Publish new crates only after their workspace dependencies are available,
+then register their trusted publisher before switching them to OIDC.
 
 Release PRs use the built-in `GITHUB_TOKEN` by default, with job-level
 `contents: write` and `pull-requests: write` permissions. Enable **Allow GitHub
@@ -66,10 +66,7 @@ GitHub's [workflow dispatch exception](https://docs.github.com/en/actions/how-to
 to the token's event restrictions. An optional `RELEASE_PLZ_TOKEN` (GitHub App
 token or PAT) can override the built-in token; no personal token is required.
 
-For tokenless registry publication, configure every crate's trusted publisher
-for owner `talaagent`, repository `ffcine`, workflow `release-plz.yml` (no
-environment), then remove the registry secret. Release-plz obtains OIDC
-credentials itself. New crates still need a token for first publication.
+
 
 After publication, check each package version on crates.io and the docs.rs build
 status. The published CLI and library may lag behind `master`; source-only crates
@@ -88,3 +85,23 @@ The optional `telemetry` feature uses upstream camera parsers that still depend
 on Chrono and unmaintained YAML helpers. Those exceptions are limited in
 `deny.toml`; the normal GPU/audio features do not enable telemetry. Application
 code must use Jiff, and newly introduced Chrono edges fail cargo-deny.
+
+
+## Trusted publishing
+
+Each crate trusts GitHub owner `talaagent`, repository `ffcine`, workflow
+`release-plz.yml`, no environment. The publishing job has `id-token: write`;
+release-plz performs the OIDC exchange itself. Do not set `CARGO_REGISTRY_TOKEN`
+in that job: a persistent token overrides OIDC.
+
+Normal pushes publish only merged release PR versions. For an explicitly
+requested initial rollout or recovery, dispatch the release workflow with
+`bootstrap=true`; it publishes the committed versions through release-plz.
+`release_packages` optionally selects a comma-separated subset, allowing existing
+dependencies to publish before a new workspace crate. Empty means the workspace.
+The generated configuration is temporary and does not weaken normal push gating.
+
+For a brand-new crate, use a short-lived token with `publish-new` for its first
+release, then register the same trusted publisher through the crates.io settings
+or its API using `trustpub` permission. Never commit the token. Future updates
+use OIDC.
