@@ -20,8 +20,8 @@ default = ["ffmpeg"]
 ffmpeg = ["dep:ffmpeg-next", "ffcine-core/ffmpeg"]
 
 [dependencies]
-ffcine-core.workspace = true
-ffcine-timeline.workspace = true
+ffcine-core = { workspace = true, features = ["std"] }
+ffcine-timeline = { workspace = true, features = ["std"] }
 serde.workspace = true
 serde_json.workspace = true
 ebur128.workspace = true

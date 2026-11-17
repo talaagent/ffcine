@@ -3,6 +3,7 @@
 //! `OUTPUT` stage so it costs no dispatch of its own: libplacebo folds it into the pass that
 //! writes the target.
 
+use crate::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

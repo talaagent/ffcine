@@ -8,6 +8,9 @@
 // Matrix maths reads best with the usual one-letter names.
 #![allow(clippy::many_single_char_names)]
 
+#[allow(unused_imports)] // only the float maths, which `std` builds (tests too) have inherent
+use crate::prelude::*;
+
 /// Row-major homogeneous 3x3 matrix: `[x', y', w'] = m * [x, y, 1]`, point `(x' / w', y' / w')`.
 pub type Mat3 = [[f64; 3]; 3];
 

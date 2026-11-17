@@ -13,9 +13,22 @@ keywords.workspace = true
 categories.workspace = true
 rust-version.workspace = true
 
+[features]
+default = ["std"]
+# Without it the crate is `no_std` + `alloc` (it does no I/O, and no float maths outside tests).
+std = ["serde/std", "serde_json/std"]
+
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
+# Not the workspace specs: those turn on `std`.
+serde = { version = "1.0.229", default-features = false, features = [
+  "alloc",
+  "derive",
+] }
+serde_json = { version = "1.0.154", default-features = false, features = [
+  "alloc",
+  "preserve_order",
+  "float_roundtrip",
+] }
 
 [lints]
 workspace = true

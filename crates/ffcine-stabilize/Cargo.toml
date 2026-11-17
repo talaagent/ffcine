@@ -22,7 +22,7 @@ nvof = ["dep:ffmpeg-next", "dep:libloading", "ffcine-core/ffmpeg"]
 telemetry = ["nvof", "dep:telemetry-parser"]
 
 [dependencies]
-ffcine-core.workspace = true
+ffcine-core = { workspace = true, features = ["std"] }
 serde_json.workspace = true
 ffmpeg-next = { workspace = true, optional = true }
 libloading = { workspace = true, optional = true }

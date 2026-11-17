@@ -13,11 +13,41 @@ keywords.workspace = true
 categories.workspace = true
 rust-version.workspace = true
 
+[features]
+default = ["std"]
+# Without it the crate is `no_std` + `alloc`. `std` adds `Timeline::from_file`/`to_file` and the
+# `Path` helpers of `ExternalReference` (`from_path`, `path`).
+std = [
+  "ffcine-core/std",
+  "serde/std",
+  "serde_json/std",
+  "thiserror/std",
+  "once_cell/std",
+]
+
 [dependencies]
 ffcine-core.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-thiserror.workspace = true
+# Not the workspace specs: those turn on `std`.
+serde = { version = "1.0.229", default-features = false, features = [
+  "alloc",
+  "derive",
+] }
+serde_json = { version = "1.0.154", default-features = false, features = [
+  "alloc",
+  "preserve_order",
+  "float_roundtrip",
+] }
+thiserror = { version = "2.0.21", default-features = false }
+# The shared empty metadata map, without `std::sync::LazyLock`.
+once_cell = { version = "1.21.3", default-features = false, features = [
+  "race",
+  "alloc",
+] }
+
+# Reads OTIO's sample files.
+[[test]]
+name = "otio_roundtrip"
+required-features = ["std"]
 
 [lints]
 workspace = true

@@ -9,8 +9,9 @@
 pub mod expr;
 mod vars;
 
-use std::f64::consts::PI;
-use std::ops::Range;
+use crate::prelude::*;
+use core::f64::consts::PI;
+use core::ops::Range;
 
 use serde_json::{Map, Value};
 
@@ -124,7 +125,7 @@ fn bezier([x1, y1, x2, y2]: [f64; 4], x: f64) -> f64 {
 }
 
 /// A value that can be keyframed: `f64`, `[f64; N]` (vectors, colours).
-pub trait Animatable: Copy + std::fmt::Debug + PartialEq {
+pub trait Animatable: Copy + core::fmt::Debug + PartialEq {
     /// Components.
     const N: usize;
     fn lerp(a: Self, b: Self, k: f64) -> Self;
@@ -163,13 +164,13 @@ impl Animatable for f64 {
 impl<const N: usize> Animatable for [f64; N] {
     const N: usize = N;
     fn lerp(a: Self, b: Self, k: f64) -> Self {
-        std::array::from_fn(|i| a[i] + (b[i] - a[i]) * k)
+        core::array::from_fn(|i| a[i] + (b[i] - a[i]) * k)
     }
     fn component(self, i: usize) -> f64 {
         self[i]
     }
     fn from_fn(f: impl FnMut(usize) -> f64) -> Self {
-        std::array::from_fn(f)
+        core::array::from_fn(f)
     }
 }
 

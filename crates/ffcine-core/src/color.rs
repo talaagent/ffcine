@@ -1,7 +1,8 @@
 //! Colour space description, independent of ffmpeg's and libplacebo's enums.
 
-use std::fmt;
-use std::str::FromStr;
+use crate::prelude::*;
+use core::fmt;
+use core::str::FromStr;
 
 use crate::Error;
 

@@ -8,6 +8,7 @@
     clippy::doc_markdown
 )] // binary parsing; box sizes are small; QuickTime, BMFF are names
 
+use crate::prelude::*;
 use std::fs::File;
 use std::io::{self, Read, Seek, SeekFrom};
 use std::path::Path;

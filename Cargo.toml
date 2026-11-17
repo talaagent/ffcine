@@ -21,12 +21,12 @@ rust-version = "1.89"
 [workspace.dependencies]
 # Internal crates
 ffcine = { path = "crates/ffcine", version = "0.4.0", default-features = false }
-ffcine-core = { path = "crates/ffcine-core", version = "0.4.0" }
-ffcine-timeline = { path = "crates/ffcine-timeline", version = "0.4.0" }
+ffcine-core = { path = "crates/ffcine-core", version = "0.4.0", default-features = false }
+ffcine-timeline = { path = "crates/ffcine-timeline", version = "0.4.0", default-features = false }
 ffcine-import = { path = "crates/ffcine-import", version = "0.4.0" }
 ffcine-stabilize = { path = "crates/ffcine-stabilize", version = "0.4.0", default-features = false }
 ffcine-render = { path = "crates/ffcine-render", version = "0.4.0", default-features = false }
-ffcine-filters = { path = "crates/ffcine-filters", version = "0.4.0" }
+ffcine-filters = { path = "crates/ffcine-filters", version = "0.4.0", default-features = false }
 ffcine-reframe = { path = "crates/ffcine-reframe", version = "0.4.0" }
 ffcine-audio = { path = "crates/ffcine-audio", version = "0.4.0", default-features = false }
 ffcine-assembly = { path = "crates/ffcine-assembly", version = "0.4.0" }

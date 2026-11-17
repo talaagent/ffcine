@@ -14,8 +14,8 @@ categories.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-ffcine-core.workspace = true
-ffcine-timeline.workspace = true
+ffcine-core = { workspace = true, features = ["std"] }
+ffcine-timeline = { workspace = true, features = ["std"] }
 # Grade, Hook, Crop (no backend features).
 ffcine-render.workspace = true
 # The warp sampling GLSL, shared with the stabilizer's own hook.

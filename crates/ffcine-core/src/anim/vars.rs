@@ -3,7 +3,9 @@
 //! name in an inner level shadows the outer one. Within a level the vars are ordered so each is
 //! compiled after the ones it reads, and a cycle is an error naming it.
 
-use std::collections::HashMap;
+use alloc::collections::BTreeMap as HashMap;
+
+use crate::prelude::*;
 
 use serde_json::{Map, Value};
 
@@ -112,7 +114,7 @@ fn visit<'a>(
     state: &mut HashMap<&'a str, u8>,
     stack: &mut Vec<&'a str>,
     order: &mut Vec<&'a str>,
-) -> std::result::Result<(), String> {
+) -> core::result::Result<(), String> {
     match state.get(n) {
         Some(2) => return Ok(()),
         Some(1) => {

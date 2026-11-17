@@ -13,8 +13,9 @@
     clippy::doc_markdown
 )] // binary parsing; box sizes are small; QuickTime, BMFF are names
 
-use std::fmt;
-use std::str::FromStr;
+use crate::prelude::*;
+use core::fmt;
+use core::str::FromStr;
 
 use crate::Error;
 use crate::bmff::{Mp4Info, Track};

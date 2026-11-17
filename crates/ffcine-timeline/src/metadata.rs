@@ -17,6 +17,8 @@
 //! - `ffcine` effects (`Effect.1` with `effect_name = "ffcine.<domain>.<name>"`) carry their
 //!   parameters here too, tagged `"schema": "ffcine.<domain>.<name>/<major>"`.
 
+use crate::prelude::*;
+use once_cell::race::OnceBox;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
@@ -145,7 +147,11 @@ has_metadata!(
 );
 
 /// Empty map handed out for `Unknown` objects without metadata.
-static EMPTY: std::sync::LazyLock<Map<String, Value>> = std::sync::LazyLock::new(Map::new);
+static EMPTY: OnceBox<Map<String, Value>> = OnceBox::new();
+
+fn empty() -> &'static Map<String, Value> {
+    EMPTY.get_or_init(|| Box::new(Map::new()))
+}
 
 /// Unknown objects expose their `metadata` if it is an object (created on mutable access).
 macro_rules! has_metadata_enum {
@@ -154,7 +160,7 @@ macro_rules! has_metadata_enum {
             fn metadata(&self) -> &Map<String, Value> {
                 match self {
                     $($t::$v(x) => &x.metadata,)*
-                    $t::Unknown(m) => m.get("metadata").and_then(Value::as_object).unwrap_or(&EMPTY),
+                    $t::Unknown(m) => m.get("metadata").and_then(Value::as_object).unwrap_or(empty()),
                 }
             }
             fn metadata_mut(&mut self) -> &mut Map<String, Value> {

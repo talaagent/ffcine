@@ -33,8 +33,8 @@ nvof = ["ffmpeg", "ffcine-stabilize/nvof"]
 telemetry = ["nvof", "ffcine-stabilize/telemetry"]
 
 [dependencies]
-ffcine-core.workspace = true
-ffcine-timeline.workspace = true
+ffcine-core = { workspace = true, features = ["std"] }
+ffcine-timeline = { workspace = true, features = ["std"] }
 ffcine-import.workspace = true
 ffcine-stabilize.workspace = true
 ffcine-render.workspace = true
@@ -42,7 +42,7 @@ ffcine-assembly.workspace = true
 ffcine-comp.workspace = true
 ffcine-audio.workspace = true
 ffcine-ingest.workspace = true
-ffcine-filters.workspace = true
+ffcine-filters = { workspace = true, features = ["std"] }
 ffcine-text.workspace = true
 ffcine-delivery.workspace = true
 ffcine-reframe.workspace = true

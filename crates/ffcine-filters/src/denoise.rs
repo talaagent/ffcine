@@ -20,7 +20,8 @@
 //! into 0..1 for LSB-aligned formats), so strengths mean the same for 8-, 10- and 16-bit input.
 //! Planes are sampled as stored (`r16`/`rg16` unorm for P010/P210), never converted to 8 bits.
 
-use std::fmt::Write as _;
+use crate::prelude::*;
+use core::fmt::Write as _;
 
 use serde::{Deserialize, Serialize};
 
@@ -173,7 +174,7 @@ impl Preset {
     }
 }
 
-impl std::str::FromStr for Preset {
+impl core::str::FromStr for Preset {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, String> {
         match s {
@@ -405,7 +406,7 @@ pub enum Motion {
     Blocks,
 }
 
-impl std::str::FromStr for Motion {
+impl core::str::FromStr for Motion {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, String> {
         match s {
@@ -832,7 +833,7 @@ mod tests {
 
             pub fn gauss(&mut self) -> f32 {
                 let (a, b) = (self.uniform(), self.uniform());
-                (-2.0 * a.ln()).sqrt() * (std::f32::consts::TAU * b).cos()
+                (-2.0 * a.ln()).sqrt() * (core::f32::consts::TAU * b).cos()
             }
         }
 

@@ -7,7 +7,8 @@
 //! The only changes on read are OTIO's own: `Clip.1` -> `Clip.2`, and `Sequence.1` (the old
 //! name) -> `Track.1`.
 
-use std::collections::BTreeMap;
+use crate::prelude::*;
+use alloc::collections::BTreeMap;
 
 use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize};
@@ -611,6 +612,7 @@ impl ExternalReference {
 
 impl ExternalReference {
     /// A `file://` URL for an absolute path (`%`, space, `#` and `?` percent-encoded).
+    #[cfg(feature = "std")]
     pub fn from_path(path: &std::path::Path, available_range: Option<TimeRange>) -> Self {
         let mut url = String::from("file://");
         for c in path.to_string_lossy().chars() {
@@ -626,6 +628,7 @@ impl ExternalReference {
     }
 
     /// The local path of a `file://` URL (percent-decoded) or of a plain path.
+    #[cfg(feature = "std")]
     pub fn path(&self) -> Option<std::path::PathBuf> {
         let rest = match self.target_url.strip_prefix("file://") {
             Some(r) => r.strip_prefix("localhost").unwrap_or(r),
