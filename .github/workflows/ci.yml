@@ -99,10 +99,56 @@ jobs:
         env:
           DOCS_RS: "1"
 
+  # ffcine-core, ffcine-filters and ffcine-timeline must build with no std at all.
+  no-std:
+    name: no_std build (wasm32v1-none)
+    runs-on: ubuntu-latest
+    env:
+      # Every std-only crate; what is left is no_std + alloc without the default `std` feature.
+      NO_STD_EXCLUDE: --exclude ffcine --exclude ffcine-assembly --exclude ffcine-audio --exclude ffcine-breakdown --exclude ffcine-cli --exclude ffcine-comp --exclude ffcine-delivery --exclude ffcine-hooks --exclude ffcine-import --exclude ffcine-ingest --exclude ffcine-reframe --exclude ffcine-render --exclude ffcine-stabilize --exclude ffcine-text --exclude ffcine-triage --exclude ffcine-libplacebo-sys
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - uses: cachix/cachix-action@v17
+        with:
+          name: nix-community
+          skipPush: true
+
+      - name: cargo build (wasm32v1-none)
+        run: nix develop --command cargo build --workspace $NO_STD_EXCLUDE --no-default-features --target wasm32v1-none --locked
+
+  # The same crates' tests with `std` off; std-only tests are cfg-gated or `required-features`.
+  no-std-test:
+    name: no_std tests (host, --no-default-features)
+    runs-on: ubuntu-latest
+    env:
+      # Every std-only crate; what is left is no_std + alloc without the default `std` feature.
+      NO_STD_EXCLUDE: --exclude ffcine --exclude ffcine-assembly --exclude ffcine-audio --exclude ffcine-breakdown --exclude ffcine-cli --exclude ffcine-comp --exclude ffcine-delivery --exclude ffcine-hooks --exclude ffcine-import --exclude ffcine-ingest --exclude ffcine-reframe --exclude ffcine-render --exclude ffcine-stabilize --exclude ffcine-text --exclude ffcine-triage --exclude ffcine-libplacebo-sys
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - uses: cachix/cachix-action@v17
+        with:
+          name: nix-community
+          skipPush: true
+
+      - name: cargo test --no-default-features
+        run: nix develop --command cargo test --workspace $NO_STD_EXCLUDE --no-default-features --locked
+
   # The one check branch protection requires.
   ci:
     if: always()
-    needs: [nix, deny, macos, portable-docs]
+    needs: [nix, deny, macos, portable-docs, no-std, no-std-test]
     runs-on: ubuntu-latest
     steps:
       - name: All jobs passed

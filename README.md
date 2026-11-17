@@ -149,6 +149,20 @@ use the Git repository when you need changes that have not reached crates.io.
 | `ffcine-triage` | [package](https://crates.io/crates/ffcine-triage) | [API docs](https://docs.rs/ffcine-triage) |
 | `ffcine-libplacebo-sys` | [package](https://crates.io/crates/ffcine-libplacebo-sys) | [API docs](https://docs.rs/ffcine-libplacebo-sys) |
 
+### `no_std` support
+
+`ffcine-core`, `ffcine-filters` and `ffcine-timeline` are `no_std` + `alloc` when built with
+`default-features = false`; the default `std` feature turns the std-only parts back on:
+
+- `ffcine-core`: `std` gates `lut` (`.cube` loading), `camera`, `wav`, `probe::MediaInfo`, the
+  `bmff` file reader, and the `Io`/`CubeParse`/`Import` error variants. Without `std`, float
+  maths go through `libm` (`num-traits`); with `std` the results are unchanged.
+- `ffcine-filters`: `std` only enables `std` in `serde`/`serde_json`; the API is the same.
+- `ffcine-timeline`: `std` gates `Timeline::from_file`/`to_file` and
+  `ExternalReference::from_path`/`path`.
+
+Every other crate needs `std` (file I/O, ffmpeg, Vulkan).
+
 ## Development
 
 ```sh
