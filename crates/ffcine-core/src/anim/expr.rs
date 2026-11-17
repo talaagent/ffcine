@@ -7,7 +7,8 @@
 
 #![allow(clippy::many_single_char_names)] // maths: x, y, z, a, b
 
-use std::f64::consts::{E, PI};
+use crate::prelude::*;
+use core::f64::consts::{E, PI};
 
 use super::{Ease, Frame, Scope};
 
@@ -38,7 +39,7 @@ impl ExprError {
     }
 }
 
-type Res<T> = std::result::Result<T, ExprError>;
+type Res<T> = core::result::Result<T, ExprError>;
 
 #[derive(Debug, Clone, PartialEq)]
 enum Tok {

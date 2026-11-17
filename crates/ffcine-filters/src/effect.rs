@@ -1,6 +1,7 @@
 //! Timeline effects (`docs/timeline.md#effect-schemas`): `ffcine.fx.denoise/1` and
 //! `ffcine.fx.grain/1`, from an effect's `metadata.ffcine` object.
 
+use crate::prelude::*;
 use serde::Deserialize;
 use serde_json::{Map, Value};
 

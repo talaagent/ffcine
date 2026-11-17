@@ -14,12 +14,27 @@ categories.workspace = true
 rust-version.workspace = true
 
 [features]
+default = ["std"]
+# Without it the crate is `no_std` + `alloc`: `anim`, `color`, `geom`, `profile`, the `bmff` types
+# and `Error`. `std` adds the file readers (`bmff::read`, `wav`), `.cube` LUTs (`lut`), probed
+# media info (`MediaInfo`), camera profiles and LUT discovery (`camera`), and the `Io`,
+# `CubeParse` and `Import` error variants.
+std = ["thiserror/std", "serde_json/std", "num-traits/std"]
 # `Error::Ffmpeg` (From<ffmpeg_next::Error>), for crates that call libav*.
-ffmpeg = ["dep:ffmpeg-next"]
+ffmpeg = ["std", "dep:ffmpeg-next"]
 
 [dependencies]
-thiserror.workspace = true
-serde_json.workspace = true
+# Not the workspace specs: those turn on `std`.
+thiserror = { version = "2.0.21", default-features = false }
+serde_json = { version = "1.0.154", default-features = false, features = [
+  "alloc",
+  "preserve_order",
+  "float_roundtrip",
+] }
+# Float maths (`sqrt`, `exp`, `powf`, ...) through `libm` without `std`.
+num-traits = { version = "0.2.19", default-features = false, features = [
+  "libm",
+] }
 ffmpeg-next = { workspace = true, optional = true }
 
 [lints]

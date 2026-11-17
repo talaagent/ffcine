@@ -4,6 +4,7 @@
 //! overlap their neighbours and take no time). [`Timeline::placed_clips`] and
 //! [`Timeline::placed_markers`] resolve them, recursing into nested stacks and tracks.
 
+use crate::prelude::*;
 use crate::{Clip, Item, Marker, Stack, Timeline, Track};
 
 /// A clip with its position on the timeline.
@@ -191,6 +192,7 @@ impl Timeline {
 
 #[cfg(test)]
 mod tests {
+    use crate::prelude::*;
     use crate::{
         Clip, Gap, Item, Marker, MediaReference, MissingReference, RationalTime, TimeRange,
         Timeline, Track, Transition, track_kind,

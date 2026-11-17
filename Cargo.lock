@@ -650,6 +650,7 @@ name = "ffcine-core"
 version = "0.4.0"
 dependencies = [
  "ffmpeg-next",
+ "num-traits",
  "serde_json",
  "thiserror 2.0.21",
 ]
@@ -767,6 +768,7 @@ name = "ffcine-timeline"
 version = "0.4.0"
 dependencies = [
  "ffcine-core",
+ "once_cell",
  "serde",
  "serde_json",
  "thiserror 2.0.21",
@@ -1480,6 +1482,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
+ "libm",
 ]
 
 [[package]]

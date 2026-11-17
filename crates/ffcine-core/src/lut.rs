@@ -1,8 +1,9 @@
 //! 3D LUTs (`.cube`), parsed on the CPU and uploaded by the backend.
 
-use std::fmt;
+use crate::prelude::*;
+use core::fmt;
+use core::str::FromStr;
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
 
 use crate::color::named_enum;
 use crate::{Error, Result};
@@ -171,7 +172,7 @@ impl Lut {
     /// The LUT as `.cube` text (`TITLE`, `LUT_3D_SIZE`, the domain if not 0..1, then entries).
     #[allow(clippy::float_cmp)] // exact defaults
     pub fn to_cube(&self) -> String {
-        use std::fmt::Write as _;
+        use core::fmt::Write as _;
         let mut s = String::new();
         if let Some(t) = &self.title {
             let _ = writeln!(s, "TITLE \"{t}\"");

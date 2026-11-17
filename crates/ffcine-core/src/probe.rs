@@ -1,11 +1,15 @@
 //! What a media file contains, as reported by a backend (`ffcine_render::Backend`).
 
-use std::collections::BTreeMap;
-use std::fmt;
+#[cfg(feature = "std")]
+use alloc::collections::BTreeMap;
+use core::fmt;
+#[cfg(feature = "std")]
+use core::time::Duration;
+#[cfg(feature = "std")]
 use std::path::PathBuf;
-use std::time::Duration;
 
 use crate::ColorSpace;
+use crate::prelude::*;
 
 /// An exact ratio (frame rates, time bases).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -20,7 +24,7 @@ impl Rational {
     }
 }
 
-impl std::str::FromStr for Rational {
+impl core::str::FromStr for Rational {
     type Err = crate::Error;
     /// `24000/1001` or `25`.
     fn from_str(s: &str) -> Result<Self, crate::Error> {
@@ -46,6 +50,8 @@ impl fmt::Display for Rational {
     }
 }
 
+/// Needs `std` (`path`).
+#[cfg(feature = "std")]
 #[derive(Debug, Clone, PartialEq)]
 pub struct MediaInfo {
     pub path: PathBuf,
@@ -95,6 +101,7 @@ pub struct AudioInfo {
     pub sample_format: String,
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for MediaInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}: {}", self.path.display(), self.format)?;
@@ -144,6 +151,7 @@ impl fmt::Display for StreamInfo {
     }
 }
 
+#[cfg(feature = "std")]
 impl MediaInfo {
     /// The first video stream, if any.
     pub fn video(&self) -> Option<(&StreamInfo, &VideoInfo)> {

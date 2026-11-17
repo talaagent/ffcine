@@ -21,8 +21,8 @@ ffmpeg = ["dep:ffmpeg-next", "ffcine-core/ffmpeg", "ffcine-stabilize/nvof"]
 placebo = ["dep:libplacebo-sys", "libplacebo-sys/libav"]
 
 [dependencies]
-ffcine-core.workspace = true
-ffcine-filters.workspace = true
+ffcine-core = { workspace = true, features = ["std"] }
+ffcine-filters = { workspace = true, features = ["std"] }
 ffcine-stabilize.workspace = true
 ffmpeg-next = { workspace = true, optional = true }
 libplacebo-sys = { workspace = true, optional = true }

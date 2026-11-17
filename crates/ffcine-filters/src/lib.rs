@@ -17,6 +17,17 @@
 //!   into the render pass itself.
 //!
 //! Kernels are generated GLSL ([`denoise`], [`grain`]); this crate has no GPU dependency.
+//!
+//! `no_std` + `alloc` without the default `std` feature: it does no I/O, and the generated GLSL is
+//! the same either way.
+
+#![no_std]
+
+extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
+
+mod prelude;
 
 pub mod denoise;
 pub mod effect;
@@ -25,7 +36,8 @@ pub mod grain;
 pub use denoise::{Denoise, Motion, Overrides, Preset, Spatial, Temporal};
 pub use grain::Grain;
 
-use std::fmt;
+use crate::prelude::*;
+use core::fmt;
 
 /// Where in the libplacebo grade pass a filter runs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

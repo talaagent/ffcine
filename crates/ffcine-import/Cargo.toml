@@ -14,8 +14,8 @@ categories.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-ffcine-core.workspace = true
-ffcine-timeline.workspace = true
+ffcine-core = { workspace = true, features = ["std"] }
+ffcine-timeline = { workspace = true, features = ["std"] }
 serde.workspace = true
 serde_json.workspace = true
 roxmltree.workspace = true

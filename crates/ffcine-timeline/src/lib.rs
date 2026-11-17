@@ -19,14 +19,28 @@
 //! assert_eq!(Timeline::from_json(&json)?, t);
 //! # Ok::<(), ffcine_core::Error>(())
 //! ```
+//!
+//! `no_std` + `alloc` without the default `std` feature; `std` adds [`Timeline::from_file`] and
+//! [`Timeline::to_file`] and the `Path` helpers [`ExternalReference::from_path`] and
+//! [`ExternalReference::path`].
+
+#![no_std]
+
+extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
 
 pub mod metadata;
 pub mod place;
+mod prelude;
 pub mod project;
 pub mod schema;
 pub mod time;
 
+#[cfg(feature = "std")]
 use std::path::Path;
+
+use crate::prelude::*;
 
 pub use metadata::{FFCINE, FFCINE_VERSION, HasMetadata};
 pub use place::{Placed, PlacedMarker};
@@ -41,7 +55,9 @@ pub use schema::{
 };
 pub use time::{RationalTime, TimeRange};
 
-use ffcine_core::{Error, Result};
+#[cfg(feature = "std")]
+use ffcine_core::Error;
+use ffcine_core::Result;
 
 impl Timeline {
     pub fn new(name: impl Into<String>) -> Self {
@@ -57,14 +73,21 @@ impl Timeline {
 
     /// Pretty-printed with 4-space indents, like OTIO.
     pub fn to_json(&self) -> Result<String> {
-        let mut out = Vec::new();
-        let fmt = serde_json::ser::PrettyFormatter::with_indent(b"    ");
-        let mut ser = serde_json::Serializer::with_formatter(&mut out, fmt);
-        serde::Serialize::serialize(self, &mut ser)?;
-        out.push(b'\n');
-        Ok(String::from_utf8(out).unwrap_or_default())
+        #[cfg(feature = "std")]
+        {
+            let mut out = Vec::new();
+            let fmt = serde_json::ser::PrettyFormatter::with_indent(b"    ");
+            let mut ser = serde_json::Serializer::with_formatter(&mut out, fmt);
+            serde::Serialize::serialize(self, &mut ser)?;
+            out.push(b'\n');
+            Ok(String::from_utf8(out).unwrap_or_default())
+        }
+        // No custom indent without `std` (`serde_json::Serializer` needs `io::Write`).
+        #[cfg(not(feature = "std"))]
+        Ok(double_indent(&serde_json::to_string_pretty(self)?))
     }
 
+    #[cfg(feature = "std")]
     pub fn from_file(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
         let json = std::fs::read_to_string(path).map_err(|source| Error::Io {
@@ -74,6 +97,7 @@ impl Timeline {
         Self::from_json(&json)
     }
 
+    #[cfg(feature = "std")]
     pub fn to_file(&self, path: impl AsRef<Path>) -> Result<()> {
         let path = path.as_ref();
         std::fs::write(path, self.to_json()?).map_err(|source| Error::Io {
@@ -107,6 +131,20 @@ impl Timeline {
         collect_clips(&self.tracks.children, &mut out);
         out
     }
+}
+
+/// `serde_json`'s 2-space pretty output with 4-space indents and a final newline: the same bytes
+/// as a 4-space `PrettyFormatter` (no raw newline can occur inside a JSON string).
+#[cfg(any(not(feature = "std"), test))]
+fn double_indent(two: &str) -> String {
+    let mut out = String::with_capacity(two.len() * 3 / 2);
+    for line in two.lines() {
+        let body = line.trim_start_matches(' ');
+        out.extend(core::iter::repeat_n(' ', 2 * (line.len() - body.len())));
+        out.push_str(body);
+        out.push('\n');
+    }
+    out
 }
 
 fn collect_clips<'a>(items: &'a [Item], out: &mut Vec<&'a Clip>) {
@@ -143,5 +181,27 @@ impl Item {
             Item::Track(x) => x.source_range.as_ref(),
             Item::Transition(_) | Item::Unknown(_) => None,
         }
+    }
+}
+
+#[cfg(all(test, feature = "std"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn double_indent_matches_4_space_formatter() {
+        let mut track = Track::new("V 1", track_kind::VIDEO);
+        let media = MediaReference::External(ExternalReference::new("file:///a b.mov", None));
+        let mut clip = Clip::new(
+            "a\n\"b\"",
+            media,
+            Some(TimeRange::from_frames(10.0, 58.0, 24.0)),
+        );
+        clip.set_ffcine_id("a");
+        track.children.push(Item::Clip(clip));
+        let mut t = Timeline::new("t");
+        t.tracks.children.push(Item::Track(track));
+        let two = serde_json::to_string_pretty(&t).unwrap_or_default();
+        assert_eq!(double_indent(&two), t.to_json().unwrap_or_default());
     }
 }

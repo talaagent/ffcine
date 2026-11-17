@@ -11,7 +11,8 @@
 //! denoise, and warmth/contrast/saturation scaled by `rules.light`. Each layer only sets the
 //! fields it has (`GradeParams` is all-`Option`).
 
-use std::collections::BTreeMap;
+use crate::prelude::*;
+use alloc::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -238,7 +239,7 @@ pub struct BusSend {
     /// Send level, dB (default 0).
     pub gain_db: f64,
     /// Tap before the bus's fader and ducking, not after [false].
-    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    #[serde(skip_serializing_if = "core::ops::Not::not")]
     pub pre: bool,
 }
 

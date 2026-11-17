@@ -1,14 +1,19 @@
+#[cfg(feature = "std")]
 use std::path::PathBuf;
+
+use crate::prelude::*;
 
 /// Errors from ffcine and its backends.
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
 pub enum Error {
+    #[cfg(feature = "std")]
     #[error("{path}: {source}")]
     Io {
         path: PathBuf,
         source: std::io::Error,
     },
+    #[cfg(feature = "std")]
     #[error("{path}:{line}: invalid .cube LUT: {msg}")]
     CubeParse {
         path: PathBuf,
@@ -28,6 +33,7 @@ pub enum Error {
         msg: String,
         src: String,
     },
+    #[cfg(feature = "std")]
     #[error("{path}: {msg}")]
     Import { path: PathBuf, msg: String },
     #[error("invalid OTIO JSON: {0}")]
@@ -46,4 +52,4 @@ pub enum Error {
     Ffmpeg(#[from] ffmpeg_next::Error),
 }
 
-pub type Result<T, E = Error> = std::result::Result<T, E>;
+pub type Result<T, E = Error> = core::result::Result<T, E>;

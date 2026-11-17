@@ -10,6 +10,7 @@ ignore = [
   # Optional telemetry-parser has no feature to replace its upstream YAML reader.
   { id = "RUSTSEC-2024-0449", reason = "unsafe-libyaml via optional telemetry-parser; no upstream replacement available" },
   { id = "RUSTSEC-2024-0436", reason = "paste via telemetry-parser" },
+  { id = "RUSTSEC-2026-0543", reason = "chrono unmaintained; only via optional telemetry-parser (bans allow it only there)" },
 ]
 
 [licenses]

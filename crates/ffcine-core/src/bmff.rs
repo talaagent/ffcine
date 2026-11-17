@@ -10,16 +10,24 @@
     clippy::doc_markdown
 )] // binary parsing; box sizes are small; QuickTime, BMFF are names
 
-use std::collections::BTreeMap;
+use alloc::collections::BTreeMap;
+#[cfg(feature = "std")]
 use std::fs::File;
+#[cfg(feature = "std")]
 use std::io::{self, Read, Seek, SeekFrom};
+#[cfg(feature = "std")]
 use std::path::Path;
 
-use crate::{Error, Rational, Result};
+use crate::Rational;
+use crate::prelude::*;
+#[cfg(feature = "std")]
+use crate::{Error, Result};
 
 /// Seconds from 1904-01-01 (QuickTime epoch) to 1970-01-01.
+#[cfg(feature = "std")]
 const QT_EPOCH_OFFSET: i64 = 2_082_844_800;
 /// Boxes larger than this are skipped rather than read into memory (cover art, thumbnails).
+#[cfg(feature = "std")]
 const MAX_READ: u64 = 4 << 20;
 
 /// `colr` box contents (ITU-T H.273 code points).
@@ -102,11 +110,13 @@ impl Mp4Info {
     }
 }
 
+#[cfg(feature = "std")]
 struct Reader {
     f: File,
     len: u64,
 }
 
+#[cfg(feature = "std")]
 #[derive(Debug, Clone, Copy)]
 struct BoxHdr {
     kind: [u8; 4],
@@ -115,6 +125,7 @@ struct BoxHdr {
     end: u64,
 }
 
+#[cfg(feature = "std")]
 impl Reader {
     fn read_at(&mut self, pos: u64, n: usize) -> io::Result<Vec<u8>> {
         self.f.seek(SeekFrom::Start(pos))?;
@@ -165,28 +176,35 @@ impl Reader {
     }
 }
 
+#[cfg(feature = "std")]
 fn invalid(what: &'static str, value: &str) -> io::Error {
     io::Error::new(io::ErrorKind::InvalidData, format!("{what} {value}"))
 }
 
+#[cfg(feature = "std")]
 fn fourcc(k: [u8; 4]) -> String {
     k.iter().map(|&b| char::from(b)).collect()
 }
 
+#[cfg(feature = "std")]
 fn be16(b: &[u8]) -> u16 {
     u16::from_be_bytes([b[0], b[1]])
 }
+#[cfg(feature = "std")]
 fn be32(b: &[u8]) -> u32 {
     u32::from_be_bytes([b[0], b[1], b[2], b[3]])
 }
+#[cfg(feature = "std")]
 fn be64(b: &[u8]) -> u64 {
     u64::from_be_bytes([b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7]])
 }
 
+#[cfg(feature = "std")]
 fn find(boxes: &[BoxHdr], kind: [u8; 4]) -> Option<BoxHdr> {
     boxes.iter().copied().find(|b| b.kind == kind)
 }
 
+#[cfg(feature = "std")]
 /// Reads the metadata of an ISO BMFF file. Errors only if it isn't one (no `ftyp`/`moov`).
 pub fn read(path: &Path) -> Result<Mp4Info> {
     read_io(path).map_err(|source| Error::Io {
@@ -195,6 +213,7 @@ pub fn read(path: &Path) -> Result<Mp4Info> {
     })
 }
 
+#[cfg(feature = "std")]
 fn read_io(path: &Path) -> io::Result<Mp4Info> {
     let f = File::open(path)?;
     let len = f.metadata()?.len();
@@ -231,6 +250,7 @@ fn read_io(path: &Path) -> io::Result<Mp4Info> {
     Ok(info)
 }
 
+#[cfg(feature = "std")]
 #[allow(clippy::cast_precision_loss, clippy::cast_possible_wrap)]
 fn mvhd(r: &mut Reader, b: BoxHdr, info: &mut Mp4Info) -> io::Result<()> {
     let p = r.payload(b)?;
@@ -254,6 +274,7 @@ fn mvhd(r: &mut Reader, b: BoxHdr, info: &mut Mp4Info) -> io::Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "std")]
 #[allow(clippy::cast_precision_loss)]
 fn trak(r: &mut Reader, b: BoxHdr) -> io::Result<Option<Track>> {
     let kids = r.children(b.start, b.end)?;
@@ -345,6 +366,7 @@ fn trak(r: &mut Reader, b: BoxHdr) -> io::Result<Option<Track>> {
     Ok(Some(t))
 }
 
+#[cfg(feature = "std")]
 fn stts(r: &mut Reader, b: BoxHdr, timescale: u32, t: &mut Track) -> io::Result<()> {
     let p = r.payload(b)?;
     if p.len() < 8 || timescale == 0 {
@@ -373,6 +395,7 @@ fn stts(r: &mut Reader, b: BoxHdr, timescale: u32, t: &mut Track) -> io::Result<
     Ok(())
 }
 
+#[cfg(feature = "std")]
 fn gcd(mut a: u32, mut b: u32) -> u32 {
     while b != 0 {
         (a, b) = (b, a % b);
@@ -380,6 +403,7 @@ fn gcd(mut a: u32, mut b: u32) -> u32 {
     a.max(1)
 }
 
+#[cfg(feature = "std")]
 fn stsd(r: &mut Reader, b: BoxHdr, t: &mut Track) {
     let Ok(p) = r.payload(b) else {
         return;
@@ -416,6 +440,7 @@ fn stsd(r: &mut Reader, b: BoxHdr, t: &mut Track) {
     }
 }
 
+#[cfg(feature = "std")]
 fn prores_depth(codec: &str) -> Option<u8> {
     match codec {
         "apch" | "apcn" | "apcs" | "apco" => Some(10),
@@ -424,6 +449,7 @@ fn prores_depth(codec: &str) -> Option<u8> {
     }
 }
 
+#[cfg(feature = "std")]
 fn prores_chroma(codec: &str) -> Option<u8> {
     match codec {
         "apch" | "apcn" | "apcs" | "apco" => Some(2),
@@ -432,6 +458,7 @@ fn prores_chroma(codec: &str) -> Option<u8> {
     }
 }
 
+#[cfg(feature = "std")]
 /// Boxes inside a visual sample entry: `hvcC`, `avcC`, `colr`, `dvcC`, ...
 fn sample_entry_boxes(mut b: &[u8], t: &mut Track) {
     while b.len() >= 8 {
@@ -465,6 +492,7 @@ fn sample_entry_boxes(mut b: &[u8], t: &mut Track) {
     }
 }
 
+#[cfg(feature = "std")]
 /// `avcC`: High profiles carry chroma/bit depth after the parameter sets; others are 8-bit 4:2:0.
 fn avcc(body: &[u8], t: &mut Track) {
     let profile = body[1];
@@ -502,6 +530,7 @@ fn text(b: &[u8]) -> String {
         .to_owned()
 }
 
+#[cfg(feature = "std")]
 fn udta(r: &mut Reader, b: BoxHdr, info: &mut Mp4Info) -> io::Result<()> {
     for c in r.children(b.start, b.end)? {
         let key = fourcc(c.kind);
@@ -535,6 +564,7 @@ fn udta(r: &mut Reader, b: BoxHdr, info: &mut Mp4Info) -> io::Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "std")]
 /// `meta` box: either ISO (full box, then `hdlr`) or QuickTime (no version/flags).
 fn meta(r: &mut Reader, b: BoxHdr, info: &mut Mp4Info) -> io::Result<()> {
     let head = r.read_at(b.start, 8.min((b.end - b.start) as usize))?;
@@ -585,6 +615,7 @@ fn meta(r: &mut Reader, b: BoxHdr, info: &mut Mp4Info) -> io::Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "std")]
 /// Canon's `uuid` box (`85c0b687-820f-11e0-8111-f4ce462b6a48`) holds `CMT1`, a TIFF IFD0.
 fn canon_uuid(r: &mut Reader, b: BoxHdr, info: &mut Mp4Info) -> io::Result<()> {
     const CANON: [u8; 16] = [
@@ -672,7 +703,7 @@ mod tests {
 }
 
 /// Real camera files under `FFCINE_SAMPLE_DIR`, when set (skipped otherwise).
-#[cfg(test)]
+#[cfg(all(test, feature = "std"))]
 mod samples {
     use std::path::{Path, PathBuf};
 

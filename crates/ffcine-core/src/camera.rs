@@ -17,9 +17,10 @@
 // Colour maths: matrix entries and chromaticities read best as single letters.
 #![allow(clippy::many_single_char_names)]
 
-use std::fmt;
+use crate::prelude::*;
+use core::fmt;
+use core::str::FromStr;
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
 
 use crate::color::{Primaries, Transfer, named_enum};
 use crate::lut::Lut;
@@ -338,8 +339,8 @@ pub fn rgb_to_xyz(c: &Chromaticities) -> [[f64; 3]; 3] {
     let [r, g, b, w] = c.map(xyz);
     let p = [[r[0], g[0], b[0]], [r[1], g[1], b[1]], [r[2], g[2], b[2]]];
     let pi = inv(&p);
-    let s: [f64; 3] = std::array::from_fn(|i| (0..3).map(|k| pi[i][k] * w[k]).sum());
-    std::array::from_fn(|i| std::array::from_fn(|j| p[i][j] * s[j]))
+    let s: [f64; 3] = core::array::from_fn(|i| (0..3).map(|k| pi[i][k] * w[k]).sum());
+    core::array::from_fn(|i| core::array::from_fn(|j| p[i][j] * s[j]))
 }
 
 /// Linear RGB in `from` -> linear RGB in `to` (same white, no adaptation).
@@ -402,7 +403,7 @@ fn analytic(n: usize, decode: fn(f64) -> f64, gamut: &M3, exposure: f64, title: 
     let mut lut = Lut::identity(n);
     for e in &mut lut.data {
         let lin = e.map(|v| decode(f64::from(v)));
-        *e = std::array::from_fn(|i| {
+        *e = core::array::from_fn(|i| {
             let v: f64 = (0..3).map(|k| gamut[i][k] * lin[k]).sum();
             #[allow(clippy::cast_possible_truncation)]
             let out = filmic(v * exposure).powf(1.0 / 2.4) as f32;
@@ -456,7 +457,7 @@ fn analytic_pq(
     let mut lut = Lut::identity(n);
     for e in &mut lut.data {
         let lin = e.map(|v| decode(f64::from(v)));
-        *e = std::array::from_fn(|i| {
+        *e = core::array::from_fn(|i| {
             let v: f64 = (0..3).map(|k| gamut[i][k] * lin[k]).sum();
             #[allow(clippy::cast_possible_truncation)]
             let out = pq_encode(hdr_display_nits(v * exposure, peak)) as f32;
