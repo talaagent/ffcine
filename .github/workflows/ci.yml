@@ -32,6 +32,9 @@ jobs:
       - name: cargo fmt
         run: nix develop --command cargo fmt --all --check
 
+      # - name: cargo faster check
+      #   run: nix develop --command cargo faster check   # enable once cargo-faster >= 0.1.0 is on crates.io (needs talaagent/cargo-faster#88)
+
       - name: cargo clippy
         run: nix develop --command cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 

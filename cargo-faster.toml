@@ -1,0 +1,55 @@
+#:schema https://raw.githubusercontent.com/talaagent/cargo-faster/main/docs/cargo-faster.schema.json
+# cargo-faster config, reference: https://github.com/talaagent/cargo-faster/blob/main/docs/cargo-faster.md#the-configuration-file
+
+# The crates edited most in the last 6 months (git log over crates/).
+hot = ["ffcine-render", "ffcine-import", "ffcine-cli"]
+
+# The shared base crates: everything builds on them by design (docs/design.md#crates).
+[[accept]]
+id = "high-fanout"
+crate = "ffcine-core"
+reason = "the shared base (Error, ColorSpace, Lut, MediaInfo, geom, anim): every library crate builds on it by design"
+
+[[accept]]
+id = "high-fanout"
+crate = "ffcine-timeline"
+reason = "the OTIO project model that import, render consumers, audio, comp, assembly and delivery all read by design"
+
+# A standalone public library; tala-agent depends on it, never the reverse.
+[[layer]]
+crates = ["*"]
+must_not_depend_on = ["tala-*"]
+reason = "a standalone public library; tala-agent depends on it, never the reverse"
+
+# docs/design.md#crates: core, filters, ingest and timeline have no GPU or libav dependency
+# (ingest runs on macOS; core, filters and timeline build no_std), so they stay below render.
+[[layer]]
+crates = ["ffcine-core", "ffcine-filters", "ffcine-ingest", "ffcine-timeline"]
+must_not_depend_on = ["ffcine-render", "libplacebo-sys", "ffcine", "ffcine-cli"]
+reason = "GPU-free base crates (docs/design.md#crates): ingest runs on macOS, core/filters/timeline build no_std"
+
+# Measured 2026-11-18 with `cargo faster check --timings` inside `nix develop`, on a shared 32-core
+# dev box (load 59-89, shared jobserver), cold target dir, two runs, larger value kept:
+# cold check 35.3s / 25.3s; edit ffcine-render 16.9s / 6.2s, ffcine-import 78.9s / 1.7s,
+# ffcine-cli 0.4s / 0.9s; critical path 9 workspace crates / 3; 10 duplicate versions.
+# Budgets are measured × 1.25 rounded up; the critical-path crates are the union of both runs.
+[budgets]
+cold_check_secs = 45
+edit_rebuild_secs = { ffcine-render = 22, ffcine-import = 99, ffcine-cli = 2 }
+critical_path_max_crates = 10
+no_new_critical_crates = [
+  "ffcine-core",
+  "ffcine-stabilize",
+  "ffcine-render",
+  "ffcine-reframe",
+  "ffcine-hooks",
+  "ffcine-comp",
+  "ffcine-assembly",
+  "ffcine-delivery",
+  "ffcine",
+  "ffcine-cli",
+]
+max_duplicate_versions = 13
+
+[env]
+nextest_profile = "ci" # CI runs `cargo nextest run --profile ci`
