@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1](https://github.com/talaagent/ffcine/compare/v0.4.0...v0.4.1) - 2026-11-18
+
+### Added
+
+- no_std + alloc for ffcine-core, ffcine-filters, ffcine-timeline (default std feature) ([#31](https://github.com/talaagent/ffcine/pull/31))
+
+### Other
+
+- Rust 1.100.0 ([#34](https://github.com/talaagent/ffcine/pull/34))
+
 ## [0.4.0](https://github.com/talaagent/ffcine/compare/v0.3.0...v0.4.0) - 2026-11-07
 
 ### Added
