@@ -7,6 +7,10 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -33,8 +37,20 @@
       ];
 
       perSystem =
-        { config, pkgs, ... }:
+        {
+          config,
+          system,
+          pkgs,
+          ...
+        }:
         let
+          # Toolchain pinned by rust-toolchain.toml, from rust-overlay.
+          rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+          rustPlatform = pkgs.makeRustPlatform {
+            cargo = rustToolchain;
+            rustc = rustToolchain;
+          };
+
           libplacebo = pkgs.callPackage ./nix/libplacebo.nix { };
 
           # The GPU ffmpeg (the same overrides as the Python prototype's
@@ -65,20 +81,17 @@
             name = "ffcine-audio";
             nativeBuildInputs = [
               pkgs.pkg-config
-              pkgs.rustPlatform.bindgenHook
+              rustPlatform.bindgenHook
             ];
             buildInputs = [ pkgs.ffmpeg ] ++ pkgs.lib.optional pkgs.stdenv.hostPlatform.isDarwin pkgs.libiconv;
             packages = [
-              pkgs.cargo
+              rustToolchain
               pkgs.cargo-nextest
               pkgs.cargo-deny
-              pkgs.rustc
-              pkgs.clippy
-              pkgs.rustfmt
             ];
           };
 
-          ffcine = pkgs.rustPlatform.buildRustPackage {
+          ffcine = rustPlatform.buildRustPackage {
             pname = "ffcine";
             version = (pkgs.lib.importTOML ./Cargo.toml).workspace.package.version;
             src = pkgs.lib.fileset.toSource {
@@ -107,7 +120,7 @@
             # bindgenHook points bindgen (ffmpeg-sys-next, libplacebo-sys) at libclang.
             nativeBuildInputs = [
               pkgs.pkg-config
-              pkgs.rustPlatform.bindgenHook
+              rustPlatform.bindgenHook
               pkgs.autoAddDriverRunpath
             ];
             buildInputs = nativeLibs;
@@ -121,6 +134,11 @@
           };
         in
         {
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [ (import inputs.rust-overlay) ];
+          };
+
           packages = pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
             inherit ffcine libplacebo ffmpeg-gpu;
             default = ffcine;
@@ -133,6 +151,7 @@
             projectRootFile = "flake.nix";
             programs.nixfmt.enable = true;
             programs.rustfmt.enable = true;
+            programs.rustfmt.package = rustToolchain;
             programs.taplo.enable = true;
           };
 
@@ -148,8 +167,8 @@
               enable = true;
               stages = [ "pre-push" ];
               packageOverrides = {
-                cargo = pkgs.cargo;
-                clippy = pkgs.clippy;
+                cargo = rustToolchain;
+                clippy = rustToolchain;
               };
               settings = {
                 extraArgs = "--workspace --all-targets";
@@ -164,20 +183,16 @@
             name = "ffcine";
             inputsFrom = [ ffcine ];
             packages = [
-              pkgs.cargo
+              rustToolchain
               pkgs.cargo-nextest
               pkgs.cargo-deny
-              pkgs.rustc
-              pkgs.clippy
-              pkgs.rustfmt
-              pkgs.rust-analyzer
               # CLI ffmpeg/ffprobe for comparing against the libav* path.
               ffmpeg-gpu
               pkgs.vulkan-tools
               config.treefmt.build.wrapper
             ];
             shellHook = config.pre-commit.installationScript;
-            RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+            RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
             # The Vulkan loader is dlopen'd at runtime; NixOS puts the ICDs
             # (driver JSONs) under /run/opengl-driver.
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.vulkan-loader ];
