@@ -569,8 +569,7 @@ impl Denoiser {
             .find(|&i| image.planes[i].component_mapping[0] == pl::pl_channel::PL_CHANNEL_Y as i32)
             .map(|i| size(image.planes[i].texture))
             .ok_or_else(|| gpu_err("denoise needs a YUV source with a luma plane"))?;
-        for i in 0..n {
-            let p = &image.planes[i];
+        for (i, p) in image.planes.iter().enumerate().take(n) {
             let (w, h) = size(p.texture);
             let comps = u32::try_from(p.components).unwrap_or(0);
             let fmt = match comps {
